@@ -487,6 +487,7 @@
       const isLive = sn.liveBroadcastContent === 'live';
 
       const thumbUrl = sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`;
+      const card = document.createElement('div');
       card.className = 'video-card';
       card.innerHTML = `
         <div class="thumbnail-container" onclick="window.open('https://www.youtube.com/watch?v=${vid}', '_blank')">
