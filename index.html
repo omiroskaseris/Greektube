@@ -7,579 +7,430 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
   <style>
-    :root {
-      --bg: #0f0f0f;
-      --text: #f1f1f1;
-      --text-secondary: #aaaaaa;
-      --accent: #065fd4;
-    }
+    :root { --bg:#0f0f0f; --text:#f1f1f1; --sub:#aaaaaa; --accent:#065fd4; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Roboto',Arial,sans-serif; background:var(--bg); color:var(--text); line-height:1.4; overflow-x:hidden; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Header */
+    header { padding:12px 20px; background:#000; position:sticky; top:0; z-index:200; border-bottom:1px solid #222; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    h1 { font-size:1.15rem; font-weight:500; white-space:nowrap; }
+    .tab-switcher { display:flex; gap:3px; background:#1a1a1a; border-radius:20px; padding:3px; }
+    .tab-btn { padding:5px 16px; border:none; border-radius:17px; background:transparent; color:#aaa; cursor:pointer; font-size:0.83rem; font-weight:500; transition:all 0.2s; }
+    .tab-btn.active { background:var(--accent); color:#fff; }
 
-    body {
-      font-family: 'Roboto', Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.4;
-    }
+    /* Controls bar */
+    .controls-bar { padding:10px 20px; background:#111; border-bottom:1px solid #1e1e1e; display:flex; flex-wrap:wrap; gap:8px; align-items:center; position:sticky; top:53px; z-index:150; }
+    .ctrl-btn, .ctrl-select { padding:6px 13px; background:#272727; color:#fff; border:1px solid #3a3a3a; border-radius:20px; cursor:pointer; font-size:0.82rem; transition:background 0.15s; }
+    .ctrl-btn:hover { background:#333; }
+    .ctrl-btn.active { background:var(--accent); border-color:var(--accent); }
+    .ctrl-select { appearance:none; padding-right:28px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
 
-    header {
-      padding: 14px 24px;
-      background: #000;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid #303030;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
+    /* Subcategory bar */
+    .sub-bar { padding:8px 20px; background:#0d0d0d; border-bottom:1px solid #1a1a1a; display:flex; flex-wrap:wrap; gap:6px; align-items:center; position:sticky; top:101px; z-index:140; }
+    .sub-label { font-size:0.74rem; color:#555; margin-right:4px; white-space:nowrap; }
+    .sub-btn { padding:4px 12px; background:transparent; color:#888; border:1px solid #2a2a2a; border-radius:20px; cursor:pointer; font-size:0.78rem; transition:all 0.15s; white-space:nowrap; }
+    .sub-btn:hover { color:#ccc; border-color:#444; }
+    .sub-btn.active { background:#1a2a1a; color:#6fcf97; border-color:#3a6a3a; }
 
-    h1 { font-size: 1.3rem; font-weight: 500; }
+    /* Search bar */
+    .search-wrap { display:flex; gap:6px; flex:1; min-width:180px; }
+    .search-wrap input { flex:1; padding:6px 13px; background:#1e1e1e; color:#fff; border:1px solid #3a3a3a; border-radius:20px; font-size:0.82rem; outline:none; }
+    .search-wrap input:focus { border-color:var(--accent); }
+    .search-wrap button { padding:6px 14px; background:var(--accent); border:none; border-radius:20px; color:#fff; cursor:pointer; font-size:0.82rem; }
 
-    #cache-indicator {
-      margin-left: auto;
-      font-size: 0.75rem;
-      color: #666;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
+    /* Tab content */
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
 
-    #cache-indicator .dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #666;
-      display: inline-block;
-    }
+    /* Grid */
+    .container { max-width:1800px; margin:0 auto; padding:16px 20px; }
+    .video-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:22px 14px; padding:20px 0; }
+    .video-card { cursor:pointer; transition:transform 0.18s; }
+    .video-card:hover { transform:translateY(-4px); }
+    .thumb-wrap { position:relative; border-radius:10px; overflow:hidden; background:#1a1a1a; aspect-ratio:16/9; }
+    .thumb-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+    .live-badge { position:absolute; top:7px; left:7px; background:#e00; color:#fff; padding:2px 7px; border-radius:4px; font-size:0.74rem; font-weight:700; }
+    .v-info { padding:9px 0 5px; }
+    .v-title { font-size:0.91rem; font-weight:500; line-height:1.35; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .v-channel { color:var(--sub); font-size:0.8rem; margin-bottom:2px; }
+    .v-meta { color:var(--sub); font-size:0.77rem; }
+    #status-bar { text-align:center; padding:28px 20px; color:#666; font-size:0.95rem; }
+    #end-message { text-align:center; padding:28px; color:#444; display:none; }
 
-    #cache-indicator.live .dot { background: #ff4444; }
-    #cache-indicator.cached .dot { background: #4caf50; }
-    #cache-indicator.live { color: #ff8888; }
-    #cache-indicator.cached { color: #4caf50; }
+    /* Scroll tab */
+    #scroll-tab.active { display:flex; flex-direction:column; }
+    #scroll-feed { display:flex; flex-direction:column; align-items:center; }
+    .scroll-item { width:100%; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:18px 14px; border-bottom:1px solid #1a1a1a; }
+    .scroll-player-wrap { width:100%; max-width:900px; aspect-ratio:16/9; border-radius:10px; overflow:hidden; background:#000; }
+    .scroll-player-wrap iframe { width:100%; height:100%; border:none; display:block; }
+    .scroll-v-info { width:100%; max-width:900px; margin-top:12px; }
+    .scroll-title { font-size:1rem; font-weight:500; line-height:1.4; margin-bottom:5px; }
+    .scroll-channel { color:var(--sub); font-size:0.85rem; margin-bottom:4px; }
+    .scroll-meta { color:#555; font-size:0.78rem; display:flex; gap:10px; align-items:center; }
+    .scroll-yt-link { color:var(--accent); text-decoration:none; font-size:0.8rem; margin-left:auto; }
+    .scroll-yt-link:hover { text-decoration:underline; }
+    #scroll-status { text-align:center; padding:36px 20px; color:#555; }
 
-    .container {
-      max-width: 1800px;
-      margin: 0 auto;
-      padding: 16px 24px;
-    }
-
-    .controls {
-      margin: 16px 0;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .controls button, .controls select {
-      padding: 7px 14px;
-      background: #272727;
-      color: white;
-      border: 1px solid #444;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      transition: background 0.15s;
-    }
-
-    .controls button:hover { background: #333; }
-    .controls button.active { background: var(--accent); border-color: var(--accent); }
-
-    .search-bar {
-      display: flex;
-      gap: 8px;
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .search-bar input {
-      flex: 1;
-      padding: 7px 14px;
-      background: #222;
-      color: white;
-      border: 1px solid #444;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      outline: none;
-    }
-
-    .search-bar input:focus { border-color: var(--accent); }
-
-    .search-bar button {
-      padding: 7px 16px;
-      background: var(--accent);
-      border: none;
-      border-radius: 20px;
-      color: white;
-      cursor: pointer;
-    }
-
-    #clear-cache-btn {
-      padding: 5px 12px;
-      background: transparent;
-      color: #888;
-      border: 1px solid #333;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.78rem;
-      transition: all 0.15s;
-    }
-
-    #clear-cache-btn:hover { color: #ff6b6b; border-color: #ff6b6b; }
-
-    .quota-bar {
-      margin: 8px 0 4px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.78rem;
-      color: #666;
-    }
-
-    .quota-track {
-      flex: 1;
-      max-width: 200px;
-      height: 4px;
-      background: #222;
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .quota-fill {
-      height: 100%;
-      background: #4caf50;
-      border-radius: 2px;
-      transition: width 0.4s;
-    }
-
-    .quota-fill.warn { background: #ff9800; }
-    .quota-fill.danger { background: #f44336; }
-
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 24px 16px;
-      padding: 24px 0;
-    }
-
-    .video-card {
-      cursor: pointer;
-      transition: transform 0.18s ease;
-    }
-
-    .video-card:hover { transform: translateY(-4px); }
-
-    .thumbnail-container {
-      position: relative;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #222;
-      aspect-ratio: 16 / 9;
-    }
-
-    .thumbnail {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .live-badge {
-      position: absolute;
-      top: 8px;
-      left: 8px;
-      background: #ff0000;
-      color: white;
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 0.78rem;
-      font-weight: bold;
-    }
-
-    .cached-tag {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(76,175,80,0.85);
-      color: white;
-      padding: 2px 7px;
-      border-radius: 4px;
-      font-size: 0.7rem;
-    }
-
-    .video-info { padding: 10px 0 6px; }
-
-    .title {
-      font-size: 0.93rem;
-      font-weight: 500;
-      line-height: 1.38;
-      margin-bottom: 5px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .channel { color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 2px; }
-    .meta { color: var(--text-secondary); font-size: 0.79rem; }
-
-    #status-bar {
-      text-align: center;
-      padding: 30px 20px;
-      color: #777;
-      font-size: 1rem;
-    }
-
-    #end-message {
-      text-align: center;
-      padding: 30px;
-      color: #555;
-      display: none;
-    }
-
-    @media (max-width: 600px) {
-      .video-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px 12px; }
-      .controls { flex-direction: column; }
+    @media(max-width:600px){
+      .video-grid { grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px 10px; }
+      .scroll-item { padding:10px 6px; min-height:100svh; }
+      .sub-bar { top:95px; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>🇬🇷 Ελληνικά & Κυπριακά Βίντεο 🇨🇾</h1>
-  <div id="cache-indicator">
-    <span class="dot"></span>
-    <span id="cache-label">—</span>
+  <h1>🇬🇷 GR & CY Βίντεο 🇨🇾</h1>
+  <div class="tab-switcher">
+    <button class="tab-btn active" data-tab="grid">📋 Grid</button>
+    <button class="tab-btn" data-tab="scroll">▶ Scroll</button>
   </div>
 </header>
 
-<div class="container">
-
-  <div class="controls">
-    <button data-filter="CY" class="active">🇨🇾 Κύπρος</button>
-    <button data-filter="GR">🇬🇷 Ελλάδα</button>
-    <button data-filter="BOTH">Και τα δύο</button>
-    <button data-filter="LIVE_GR">🔴 Live GR</button>
-    <button data-filter="LIVE_CY">🔴 Live CY</button>
-    <button data-filter="FOREIGN_TO_GRCY">Ξένα → GR/CY</button>
-    <button data-filter="GRCY_TO_FOREIGN">GR/CY → Ξένα</button>
-
-    <select id="sortSelect">
-      <option value="viewCount">Δημοφιλή</option>
-      <option value="date">Πρόσφατα</option>
-      <option value="relevance">Σχετικά</option>
-      <option value="rating">Υψηλή Βαθμολογία</option>
-    </select>
-
-    <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Αναζήτηση ελληνικών βίντεο...">
-      <button id="searchBtn">Ψάξε</button>
-    </div>
-
-    <button id="clear-cache-btn" title="Καθαρισμός cache — θα ξανακαλέσει το API">🗑 Cache</button>
+<!-- Controls (shared visual, separate logic per tab via JS) -->
+<div class="controls-bar" id="controls-bar">
+  <button class="ctrl-btn active" data-filter="CY">🇨🇾 Κύπρος</button>
+  <button class="ctrl-btn" data-filter="GR">🇬🇷 Ελλάδα</button>
+  <button class="ctrl-btn" data-filter="BOTH">Και τα δύο</button>
+  <button class="ctrl-btn" data-filter="LIVE_GR">🔴 Live GR</button>
+  <button class="ctrl-btn" data-filter="LIVE_CY">🔴 Live CY</button>
+  <button class="ctrl-btn" data-filter="FOREIGN_TO_GRCY">Ξένα → GR/CY</button>
+  <button class="ctrl-btn" data-filter="GRCY_TO_FOREIGN">GR/CY → Ξένα</button>
+  <select class="ctrl-select" id="sortSelect">
+    <option value="viewCount">Δημοφιλή</option>
+    <option value="date">Πρόσφατα</option>
+    <option value="relevance">Σχετικά</option>
+    <option value="rating">Υψηλή Βαθμολογία</option>
+  </select>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Αναζήτηση...">
+    <button id="searchBtn">Ψάξε</button>
   </div>
+</div>
 
-  <div class="quota-bar">
-    <span>API quota σήμερα:</span>
-    <div class="quota-track"><div class="quota-fill" id="quotaFill" style="width:0%"></div></div>
-    <span id="quotaText">0 / 10,000 units</span>
-    <span id="quotaSaved" style="color:#4caf50;margin-left:4px;"></span>
+<!-- Subcategory bar -->
+<div class="sub-bar" id="sub-bar">
+  <span class="sub-label">Θέμα:</span>
+  <button class="sub-btn active" data-sub="">Όλα</button>
+  <button class="sub-btn" data-sub="μουσική">🎵 Μουσική</button>
+  <button class="sub-btn" data-sub="τεχνολογία">💻 Τεχνολογία</button>
+  <button class="sub-btn" data-sub="gaming">🎮 Gaming</button>
+  <button class="sub-btn" data-sub="μαγειρική">🍽 Μαγειρική</button>
+  <button class="sub-btn" data-sub="αθλητισμός">⚽ Αθλητισμός</button>
+  <button class="sub-btn" data-sub="ταξίδια vlog">✈ Ταξίδια</button>
+  <button class="sub-btn" data-sub="κωμωδία humor">😂 Κωμωδία</button>
+  <button class="sub-btn" data-sub="ειδήσεις νέα">📰 Ειδήσεις</button>
+  <button class="sub-btn" data-sub="εκπαίδευση">📚 Εκπαίδευση</button>
+  <button class="sub-btn" data-sub="επιστήμη">🔬 Επιστήμη</button>
+  <button class="sub-btn" data-sub="γεωλογία φύση">🌍 Γεωλογία/Φύση</button>
+  <button class="sub-btn" data-sub="ιστορία">🏛 Ιστορία</button>
+  <button class="sub-btn" data-sub="τέχνη ζωγραφική">🎨 Τέχνη</button>
+  <button class="sub-btn" data-sub="κινηματογράφος σινεμά">🎬 Κινηματογράφος</button>
+  <button class="sub-btn" data-sub="μόδα style">👗 Μόδα</button>
+  <button class="sub-btn" data-sub="ομορφιά beauty">💄 Ομορφιά</button>
+  <button class="sub-btn" data-sub="υγεία fitness">💪 Υγεία/Fitness</button>
+  <button class="sub-btn" data-sub="ψυχολογία">🧠 Ψυχολογία</button>
+  <button class="sub-btn" data-sub="οικονομία επενδύσεις">💰 Οικονομία</button>
+  <button class="sub-btn" data-sub="πολιτική">🏛 Πολιτική</button>
+  <button class="sub-btn" data-sub="θρησκεία">✝ Θρησκεία</button>
+  <button class="sub-btn" data-sub="αυτοκίνητα">🚗 Αυτοκίνητα</button>
+  <button class="sub-btn" data-sub="αρχιτεκτονική">🏗 Αρχιτεκτονική</button>
+  <button class="sub-btn" data-sub="φωτογραφία">📷 Φωτογραφία</button>
+  <button class="sub-btn" data-sub="μουσικά όργανα">🎸 Μουσικά Όργανα</button>
+  <button class="sub-btn" data-sub="χορός">💃 Χορός</button>
+  <button class="sub-btn" data-sub="θέατρο">🎭 Θέατρο</button>
+  <button class="sub-btn" data-sub="λογοτεχνία βιβλία">📖 Λογοτεχνία</button>
+  <button class="sub-btn" data-sub="ζώα pets">🐾 Ζώα</button>
+  <button class="sub-btn" data-sub="DIY κατασκευές">🔧 DIY</button>
+</div>
+
+<!-- ═══ GRID TAB ═══ -->
+<div id="grid-tab" class="tab-content active">
+  <div class="container">
+    <div id="status-bar">Φόρτωση βίντεο...</div>
+    <div id="videoGrid" class="video-grid"></div>
+    <div id="end-message">Τέλος αποτελεσμάτων</div>
+    <div id="grid-sentinel" style="height:1px;"></div>
   </div>
+</div>
 
-  <div id="status-bar">Φόρτωση βίντεο...</div>
-  <div id="videoGrid" class="video-grid"></div>
-  <div id="end-message">Τέλος αποτελεσμάτων</div>
-  <div id="sentinel" style="height:1px;"></div>
-
+<!-- ═══ SCROLL TAB ═══ -->
+<div id="scroll-tab" class="tab-content">
+  <div id="scroll-feed"></div>
+  <div id="scroll-status">Φόρτωση...</div>
+  <div id="scroll-sentinel" style="height:1px;"></div>
 </div>
 
 <script>
   const API_KEY = 'AIzaSyAjobkwRITlpmtRbPmNtn57w-zYpa-Gup8';
-  const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in ms
-  const UNITS_PER_SEARCH = 100;
-  const MAX_QUOTA = 10000;
-  const QUOTA_KEY = 'yt_quota_used';
-  const QUOTA_DATE_KEY = 'yt_quota_date';
+  const CACHE_TTL = 24 * 60 * 60 * 1000;
 
-  const grid = document.getElementById('videoGrid');
-  const statusBar = document.getElementById('status-bar');
-  const endMessage = document.getElementById('end-message');
-  const searchInput = document.getElementById('searchInput');
-  const searchBtn = document.getElementById('searchBtn');
-  const sortSelect = document.getElementById('sortSelect');
-  const cacheIndicator = document.getElementById('cache-indicator');
-  const cacheLabel = document.getElementById('cache-label');
-  const quotaFill = document.getElementById('quotaFill');
-  const quotaText = document.getElementById('quotaText');
-  const quotaSaved = document.getElementById('quotaSaved');
+  // ── Shared state ─────────────────────────────────────────────
+  let activeFilter = 'CY';
+  let activeSub = '';
+  let activeSort = 'viewCount';
+  let activeQuery = '';
+  let activeTab = 'grid';
 
-  let nextPageToken = null;
-  let isLoading = false;
-  let currentFilter = 'CY';
-  let currentQuery = '';
-  let currentSort = 'viewCount';
-  let currentCacheKey = '';
-  let fromCache = false;
+  // ── Helpers ──────────────────────────────────────────────────
+  function escHtml(s) { const d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
 
-  // ── Quota tracking ──────────────────────────────────────────
-  function getTodayStr() {
-    return new Date().toISOString().slice(0, 10);
+  function cacheSet(key, data, next) {
+    try { localStorage.setItem('ytc_'+key, JSON.stringify({ ts:Date.now(), data, next:next||null })); } catch(e){}
   }
-
-  function getQuotaUsed() {
-    const d = localStorage.getItem(QUOTA_DATE_KEY);
-    if (d !== getTodayStr()) {
-      localStorage.setItem(QUOTA_DATE_KEY, getTodayStr());
-      localStorage.setItem(QUOTA_KEY, '0');
-      return 0;
-    }
-    return parseInt(localStorage.getItem(QUOTA_KEY) || '0', 10);
-  }
-
-  function addQuotaUsed(units) {
-    const used = getQuotaUsed() + units;
-    localStorage.setItem(QUOTA_KEY, String(used));
-    renderQuota(used);
-  }
-
-  function renderQuota(used) {
-    used = used ?? getQuotaUsed();
-    const pct = Math.min((used / MAX_QUOTA) * 100, 100);
-    quotaFill.style.width = pct + '%';
-    quotaFill.className = 'quota-fill' + (pct > 80 ? ' danger' : pct > 50 ? ' warn' : '');
-    quotaText.textContent = `${used.toLocaleString()} / ${MAX_QUOTA.toLocaleString()} units`;
-  }
-
-  // ── Cache helpers ────────────────────────────────────────────
-  function cacheSet(key, data, pageToken) {
-    const entry = { ts: Date.now(), data, nextPageToken: pageToken || null };
-    try { localStorage.setItem('yt_cache_' + key, JSON.stringify(entry)); } catch(e) {}
-  }
-
   function cacheGet(key) {
     try {
-      const raw = localStorage.getItem('yt_cache_' + key);
-      if (!raw) return null;
-      const entry = JSON.parse(raw);
-      if (Date.now() - entry.ts > CACHE_TTL) {
-        localStorage.removeItem('yt_cache_' + key);
-        return null;
-      }
-      return entry;
+      const r = localStorage.getItem('ytc_'+key);
+      if (!r) return null;
+      const e = JSON.parse(r);
+      if (Date.now()-e.ts > CACHE_TTL) { localStorage.removeItem('ytc_'+key); return null; }
+      return e;
     } catch(e) { return null; }
   }
-
-  function buildCacheKey(filter, sort, query, page) {
-    return `${filter}__${sort}__${encodeURIComponent(query)}__p${page}`;
+  function buildKey(filter, sub, sort, query, page) {
+    return `${filter}|${sub}|${sort}|${encodeURIComponent(query)}|${page}`;
   }
 
-  function clearAllCache() {
-    const keys = Object.keys(localStorage).filter(k => k.startsWith('yt_cache_'));
-    keys.forEach(k => localStorage.removeItem(k));
-    localStorage.setItem(QUOTA_KEY, '0');
-    reloadVideos();
-  }
-
-  // ── API params ───────────────────────────────────────────────
   function getFilterParams(filter) {
-    switch (filter) {
-      case 'CY': return { q: 'Κύπρος OR Cyprus OR Κυπριακά OR Κύπριος OR Λευκωσία OR Λεμεσός OR greek cyprus', regionCode: 'CY' };
-      case 'GR': return { q: 'Ελληνικά OR Ελλάδα OR Αθήνα OR Θεσσαλονίκη OR μουσική OR vlog OR gaming', regionCode: 'GR' };
-      case 'BOTH': return { q: 'Ελληνικά OR Ελλάδα OR Κύπρος OR Κυπριακά OR Κύπριος OR Cyprus OR μουσική OR vlog' };
-      case 'LIVE_GR': return { q: '"Ελληνικά live" OR "ζωντανή μετάδοση" OR "live Ελλάδα" OR "streamer Ελλάδα"', eventType: 'live', regionCode: 'GR' };
-      case 'LIVE_CY': return { q: '"Κυπριακά live" OR "live Κύπρος" OR "Κύπριος streamer" OR "cyprus live"', eventType: 'live', regionCode: 'CY' };
-      case 'FOREIGN_TO_GRCY': return { q: 'Greece OR Cyprus OR Athens OR Nicosia OR Greek islands OR Cyprus beaches', relevanceLanguage: 'en' };
-      case 'GRCY_TO_FOREIGN': return { q: 'Greek streamers OR Cypriot streamers OR Ελληνικά live OR Κυπριακά live', relevanceLanguage: 'el', regionCode: 'GR' };
+    switch(filter) {
+      case 'CY': return { q:'Κύπρος OR Cyprus OR Κυπριακά OR Κύπριος OR Λευκωσία OR Λεμεσός', regionCode:'CY' };
+      case 'GR': return { q:'Ελλάδα OR Ελληνικά OR Αθήνα OR Θεσσαλονίκη', regionCode:'GR' };
+      case 'BOTH': return { q:'Ελλάδα OR Κύπρος OR Ελληνικά OR Κυπριακά' };
+      case 'LIVE_GR': return { q:'live Ελλάδα OR ζωντανή μετάδοση OR streamer Ελλάδα', eventType:'live', regionCode:'GR' };
+      case 'LIVE_CY': return { q:'live Κύπρος OR Κύπριος streamer OR cyprus live', eventType:'live', regionCode:'CY' };
+      case 'FOREIGN_TO_GRCY': return { q:'Greece OR Cyprus OR Athens OR Nicosia OR Greek islands', relevanceLanguage:'en' };
+      case 'GRCY_TO_FOREIGN': return { q:'Greek streamer English OR Cypriot English vlog', relevanceLanguage:'el' };
     }
   }
 
-  // ── Fetch (with cache) ───────────────────────────────────────
-  async function fetchVideos(pageToken = '') {
-    if (isLoading) return;
-    isLoading = true;
+  async function apiFetch(filter, sub, sort, query, pageToken) {
+    const page = pageToken || 'first';
+    const key = buildKey(filter, sub, sort, query, page);
+    const cached = cacheGet(key);
+    if (cached) return { items:cached.data, next:cached.next, fromCache:true };
 
-    const page = pageToken ? pageToken : 'first';
-    const cacheKey = buildCacheKey(currentFilter, currentSort, currentQuery, page);
-    const cached = cacheGet(cacheKey);
+    const fp = getFilterParams(filter);
+    const isLive = filter.startsWith('LIVE');
 
-    if (cached) {
-      fromCache = true;
-      renderVideos(cached.data, cached.nextPageToken, true);
-      setCacheIndicator(true, cached.ts);
-      isLoading = false;
-      return;
+    // Build combined q: region base + subcategory + user query
+    let q = fp.q;
+    if (sub) q = `(${q}) ${sub}`;
+    if (query && !isLive) q = `${query} (${q})`;
+    fp.q = q;
+
+    const params = new URLSearchParams({
+      part:'snippet', type:'video', maxResults:24,
+      order: isLive ? 'viewCount' : sort,
+      relevanceLanguage:'el',
+      key: API_KEY,
+      ...fp,
+      ...(pageToken ? { pageToken } : {})
+    });
+
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`);
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err?.error?.message || `HTTP ${res.status}`);
     }
+    const data = await res.json();
+    cacheSet(key, data.items||[], data.nextPageToken||null);
+    return { items:data.items||[], next:data.nextPageToken||null, fromCache:false };
+  }
 
-    fromCache = false;
-    setCacheIndicator(false);
+  // ── Tab switching ────────────────────────────────────────────
+  const gridTabEl = document.getElementById('grid-tab');
+  const scrollTabEl = document.getElementById('scroll-tab');
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTab = btn.dataset.tab;
+      gridTabEl.classList.toggle('active', activeTab === 'grid');
+      scrollTabEl.classList.toggle('active', activeTab === 'scroll');
+      if (activeTab === 'scroll' && scrollFeed.children.length === 0) loadScrollVideos();
+    });
+  });
+
+  // ── Shared controls ──────────────────────────────────────────
+  document.querySelectorAll('[data-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.dataset.filter;
+      reload();
+    });
+  });
+
+  document.querySelectorAll('[data-sub]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-sub]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeSub = btn.dataset.sub;
+      reload();
+    });
+  });
+
+  document.getElementById('sortSelect').addEventListener('change', e => { activeSort = e.target.value; reload(); });
+  document.getElementById('searchBtn').addEventListener('click', () => { activeQuery = document.getElementById('searchInput').value.trim(); reload(); });
+  document.getElementById('searchInput').addEventListener('keypress', e => { if(e.key==='Enter'){ activeQuery = e.target.value.trim(); reload(); } });
+
+  function reload() {
+    if (activeTab === 'grid') reloadGrid();
+    else resetScroll();
+  }
+
+  // ════════════════════════════════
+  // GRID
+  // ════════════════════════════════
+  const grid = document.getElementById('videoGrid');
+  const statusBar = document.getElementById('status-bar');
+  const endMsg = document.getElementById('end-message');
+
+  let gNext = null, gLoading = false;
+
+  async function fetchGrid(pageToken) {
+    if (gLoading) return;
+    gLoading = true;
+    statusBar.style.display = 'block';
+    if (!grid.children.length) statusBar.textContent = 'Φόρτωση βίντεο...';
 
     try {
-      const filterParams = getFilterParams(currentFilter);
-      const isLive = currentFilter.startsWith('LIVE');
+      const r = await apiFetch(activeFilter, activeSub, activeSort, activeQuery, pageToken||null);
+      if (!r.items.length) { endMsg.style.display='block'; statusBar.style.display='none'; return; }
+      statusBar.style.display = 'none';
+      gNext = r.next;
 
-      if (currentQuery && !isLive) {
-        filterParams.q = currentQuery + (filterParams.q ? ' OR ' + filterParams.q : '');
-      }
-
-      const params = new URLSearchParams({
-        part: 'snippet',
-        type: 'video',
-        maxResults: 24,
-        order: isLive ? 'viewCount' : currentSort,
-        relevanceLanguage: 'el',
-        key: API_KEY,
-        ...filterParams,
-        ...(pageToken ? { pageToken } : {})
+      r.items.forEach(item => {
+        const vid = item.id?.videoId; if (!vid) return;
+        const sn = item.snippet;
+        const date = new Date(sn.publishedAt).toLocaleDateString('el-GR');
+        const isLive = sn.liveBroadcastContent === 'live';
+        const thumb = sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`;
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.innerHTML = `
+          <div class="thumb-wrap" onclick="window.open('https://www.youtube.com/watch?v=${vid}','_blank')">
+            <img src="${thumb}" alt="${escHtml(sn.title)}" loading="lazy">
+            ${isLive ? '<span class="live-badge">LIVE ΤΩΡΑ</span>' : ''}
+          </div>
+          <div class="v-info">
+            <div class="v-title">${escHtml(sn.title)}</div>
+            <div class="v-channel">${escHtml(sn.channelTitle)}</div>
+            <div class="v-meta">${date}</div>
+          </div>`;
+        grid.appendChild(card);
       });
 
-      statusBar.style.display = 'block';
-      statusBar.textContent = 'Φόρτωση από YouTube...';
+      if (!gNext) endMsg.style.display = 'block';
+    } catch(err) {
+      statusBar.textContent = err.message.includes('403') ? '⚠️ Εξαντλήθηκε το API quota για σήμερα.' : 'Σφάλμα: '+err.message;
+    } finally { gLoading = false; }
+  }
 
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`);
+  function reloadGrid() {
+    grid.innerHTML = ''; gNext = null; endMsg.style.display = 'none';
+    statusBar.style.display = 'block'; statusBar.textContent = 'Φόρτωση βίντεο...';
+    fetchGrid();
+  }
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        const msg = err?.error?.message || `HTTP ${res.status}`;
-        if (res.status === 403) {
-          statusBar.textContent = '⚠️ Εξαντλήθηκε το API quota για σήμερα. Δοκίμασε αύριο ή σβήσε το cache.';
-        } else {
-          statusBar.textContent = 'Σφάλμα: ' + msg;
+  const gridObs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && gNext && !gLoading)
+      setTimeout(() => { if(gNext && !gLoading) fetchGrid(gNext); }, 50);
+  }, { rootMargin:'500px' });
+  gridObs.observe(document.getElementById('grid-sentinel'));
+
+  // ════════════════════════════════
+  // SCROLL
+  // ════════════════════════════════
+  const scrollFeed = document.getElementById('scroll-feed');
+  const scrollStatus = document.getElementById('scroll-status');
+
+  let sNext = null, sLoading = false, sQueue = [], activeIframe = null;
+
+  const playObs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      const iframe = entry.target.querySelector('iframe'); if (!iframe) return;
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+        if (activeIframe && activeIframe !== iframe) {
+          try { activeIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}','*'); } catch(e){}
         }
-        isLoading = false;
-        return;
+        try { iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}','*'); } catch(e){}
+        activeIframe = iframe;
+      } else {
+        try { iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}','*'); } catch(e){}
       }
-
-      const data = await res.json();
-      addQuotaUsed(UNITS_PER_SEARCH);
-
-      if (!data.items?.length) {
-        endMessage.style.display = 'block';
-        statusBar.style.display = 'none';
-        isLoading = false;
-        return;
-      }
-
-      const nextToken = data.nextPageToken || null;
-      cacheSet(cacheKey, data.items, nextToken);
-      renderVideos(data.items, nextToken, false);
-
-    } catch (err) {
-      statusBar.textContent = 'Σφάλμα σύνδεσης: ' + err.message;
-      console.error(err);
-    } finally {
-      isLoading = false;
-    }
-  }
-
-  // ── Render ───────────────────────────────────────────────────
-  function renderVideos(items, nextToken, fromCache) {
-    statusBar.style.display = 'none';
-
-    items.forEach(item => {
-      const vid = item.id?.videoId;
-      if (!vid) return;
-      const sn = item.snippet;
-      const publishedDate = new Date(sn.publishedAt).toLocaleDateString('el-GR');
-      const isLive = sn.liveBroadcastContent === 'live';
-
-      const thumbUrl = sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`;
-      const card = document.createElement('div');
-      card.className = 'video-card';
-      card.innerHTML = `
-        <div class="thumbnail-container" onclick="window.open('https://www.youtube.com/watch?v=${vid}', '_blank')">
-          <img class="thumbnail" src="${thumbUrl}" alt="${escHtml(sn.title)}" loading="lazy">
-          ${isLive ? '<span class="live-badge">LIVE ΤΩΡΑ</span>' : ''}
-          ${fromCache ? '<span class="cached-tag">📦 cache</span>' : ''}
-        </div>
-        <div class="video-info">
-          <div class="title">${escHtml(sn.title)}</div>
-          <div class="channel">${escHtml(sn.channelTitle)}</div>
-          <div class="meta">Δημοσιεύτηκε: ${publishedDate}</div>
-        </div>
-      `;
-      grid.appendChild(card);
     });
+  }, { threshold:0.6 });
 
-    nextPageToken = nextToken;
+  const scrollSentObs = new IntersectionObserver(entries => {
+    if (!entries[0].isIntersecting || sLoading) return;
+    if (sQueue.length > 0) flushQueue();
+    else if (sNext !== false) loadScrollVideos();
+  }, { rootMargin:'800px' });
+  scrollSentObs.observe(document.getElementById('scroll-sentinel'));
 
-    if (!nextToken) {
-      endMessage.style.display = 'block';
+  function flushQueue() { sQueue.splice(0,5).forEach(addScrollItem); }
+
+  function addScrollItem(item) {
+    const vid = item.id?.videoId; if (!vid) return;
+    const sn = item.snippet;
+    const date = new Date(sn.publishedAt).toLocaleDateString('el-GR');
+    const slot = document.createElement('div');
+    slot.className = 'scroll-item';
+    slot.innerHTML = `
+      <div class="scroll-player-wrap">
+        <iframe src="https://www.youtube-nocookie.com/embed/${vid}?enablejsapi=1&rel=0&modestbranding=1&playsinline=1"
+          allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"
+          allowfullscreen loading="lazy"></iframe>
+      </div>
+      <div class="scroll-v-info">
+        <div class="scroll-title">${escHtml(sn.title)}</div>
+        <div class="scroll-channel">${escHtml(sn.channelTitle)}</div>
+        <div class="scroll-meta">
+          <span>📅 ${date}</span>
+          <a class="scroll-yt-link" href="https://www.youtube.com/watch?v=${vid}" target="_blank">YouTube ↗</a>
+        </div>
+      </div>`;
+    scrollFeed.appendChild(slot);
+    playObs.observe(slot);
+  }
+
+  async function loadScrollVideos() {
+    if (sLoading) return;
+    sLoading = true;
+    scrollStatus.textContent = 'Φόρτωση...';
+    scrollStatus.style.display = 'block';
+    try {
+      const r = await apiFetch(activeFilter, activeSub, activeSort, activeQuery, sNext||null);
+      sNext = r.next || false;
+      if (!r.items.length) { scrollStatus.textContent = 'Δεν βρέθηκαν βίντεο.'; return; }
+      scrollStatus.style.display = 'none';
+      const first = r.items.slice(0,5), rest = r.items.slice(5);
+      first.forEach(addScrollItem);
+      sQueue.push(...rest);
+    } catch(err) {
+      scrollStatus.textContent = 'Σφάλμα: ' + err.message;
+    } finally { sLoading = false; }
+  }
+
+  function resetScroll() {
+    if (activeIframe) {
+      try { activeIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}','*'); } catch(e){}
+      activeIframe = null;
     }
-
-    updateQuotaSaved();
+    scrollFeed.querySelectorAll('.scroll-item').forEach(el => playObs.unobserve(el));
+    scrollFeed.innerHTML = '';
+    sQueue = []; sNext = null;
+    scrollStatus.style.display = 'block';
+    scrollStatus.textContent = 'Φόρτωση...';
+    loadScrollVideos();
   }
-
-  function escHtml(str) {
-    const d = document.createElement('div');
-    d.textContent = str || '';
-    return d.innerHTML;
-  }
-
-  function setCacheIndicator(isCached, ts) {
-    cacheIndicator.className = isCached ? 'cached' : 'live';
-    if (isCached && ts) {
-      const age = Math.round((Date.now() - ts) / 60000);
-      const ageStr = age < 60 ? `${age} λεπτά πριν` : `${Math.round(age/60)} ώρες πριν`;
-      cacheLabel.textContent = `📦 Cache (${ageStr})`;
-    } else {
-      cacheLabel.textContent = '🔴 Live API';
-    }
-  }
-
-  function updateQuotaSaved() {
-    const keys = Object.keys(localStorage).filter(k => k.startsWith('yt_cache_'));
-    const saved = keys.length * UNITS_PER_SEARCH;
-    if (saved > 0) {
-      quotaSaved.textContent = `(εξοικονομήθηκαν ${saved.toLocaleString()} units από cache)`;
-    }
-  }
-
-  // ── Controls ─────────────────────────────────────────────────
-  function reloadVideos() {
-    grid.innerHTML = '';
-    nextPageToken = null;
-    endMessage.style.display = 'none';
-    statusBar.style.display = 'block';
-    statusBar.textContent = 'Φόρτωση βίντεο...';
-    fetchVideos();
-  }
-
-  document.querySelectorAll('button[data-filter]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('button[data-filter]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentFilter = btn.dataset.filter;
-      reloadVideos();
-    });
-  });
-
-  sortSelect.addEventListener('change', () => { currentSort = sortSelect.value; reloadVideos(); });
-
-  searchBtn.addEventListener('click', () => { currentQuery = searchInput.value.trim(); reloadVideos(); });
-  searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') { currentQuery = searchInput.value.trim(); reloadVideos(); } });
-
-  document.getElementById('clear-cache-btn').addEventListener('click', () => {
-    if (confirm('Καθαρισμός cache; Θα ξανακαλεστεί το YouTube API.')) clearAllCache();
-  });
-
-  // ── Infinite scroll ──────────────────────────────────────────
-  const observer = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting && nextPageToken && !isLoading) {
-      setTimeout(() => {
-        if (nextPageToken && !isLoading) fetchVideos(nextPageToken);
-      }, 50);
-    }
-  }, { rootMargin: '500px' });
-  observer.observe(document.getElementById('sentinel'));
 
   // ── Init ─────────────────────────────────────────────────────
-  renderQuota();
-  fetchVideos();
+  fetchGrid();
 </script>
-
 </body>
 </html>
