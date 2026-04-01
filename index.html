@@ -197,7 +197,7 @@ function getFilterParams(filter) {
   switch (filter) {
     case 'GR':
       return {
-        q: 'Greece OR Ελλάδα OR Greek OR Ελληνικά',
+        q: '',
         regionCode: 'GR',
         relevanceLanguage: 'el',
         type: 'video',
@@ -207,7 +207,7 @@ function getFilterParams(filter) {
 
     case 'CY':
       return {
-        q: 'Cyprus OR Κύπρος OR Cypriot OR Κυπριακά',
+        q: '',
         regionCode: 'CY',
         relevanceLanguage: 'el',
         type: 'video',
@@ -217,7 +217,7 @@ function getFilterParams(filter) {
 
     case 'BOTH':
       return {
-        q: '(Greece OR Ελλάδα OR Greek OR Ελληνικά) OR (Cyprus OR Κύπρος OR Cypriot OR Κυπριακά)',
+        q: '',
         regionCode: 'GR',
         relevanceLanguage: 'el',
         type: 'video',
