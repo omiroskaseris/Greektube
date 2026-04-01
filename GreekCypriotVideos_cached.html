@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ελληνικά & Κυπριακά Βίντεο</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --text: #f1f1f1;
+      --text-secondary: #aaaaaa;
+      --accent: #065fd4;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    header {
+      padding: 14px 24px;
+      background: #000;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid #303030;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    h1 { font-size: 1.3rem; font-weight: 500; }
+
+    #cache-indicator {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #cache-indicator .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #666;
+      display: inline-block;
+    }
+
+    #cache-indicator.live .dot { background: #ff4444; }
+    #cache-indicator.cached .dot { background: #4caf50; }
+    #cache-indicator.live { color: #ff8888; }
+    #cache-indicator.cached { color: #4caf50; }
+
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 16px 24px;
+    }
+
+    .controls {
+      margin: 16px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .controls button, .controls select {
+      padding: 7px 14px;
+      background: #272727;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.15s;
+    }
+
+    .controls button:hover { background: #333; }
+    .controls button.active { background: var(--accent); border-color: var(--accent); }
+
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 7px 14px;
+      background: #222;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .search-bar input:focus { border-color: var(--accent); }
+
+    .search-bar button {
+      padding: 7px 16px;
+      background: var(--accent);
+      border: none;
+      border-radius: 20px;
+      color: white;
+      cursor: pointer;
+    }
+
+    #clear-cache-btn {
+      padding: 5px 12px;
+      background: transparent;
+      color: #888;
+      border: 1px solid #333;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      transition: all 0.15s;
+    }
+
+    #clear-cache-btn:hover { color: #ff6b6b; border-color: #ff6b6b; }
+
+    .quota-bar {
+      margin: 8px 0 4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: #666;
+    }
+
+    .quota-track {
+      flex: 1;
+      max-width: 200px;
+      height: 4px;
+      background: #222;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .quota-fill {
+      height: 100%;
+      background: #4caf50;
+      border-radius: 2px;
+      transition: width 0.4s;
+    }
+
+    .quota-fill.warn { background: #ff9800; }
+    .quota-fill.danger { background: #f44336; }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px 16px;
+      padding: 24px 0;
+    }
+
+    .video-card {
+      cursor: pointer;
+      transition: transform 0.18s ease;
+    }
+
+    .video-card:hover { transform: translateY(-4px); }
+
+    .thumbnail-container {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #222;
+      aspect-ratio: 16 / 9;
+    }
+
+    .thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .live-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: #ff0000;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: bold;
+    }
+
+    .cached-tag {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(76,175,80,0.85);
+      color: white;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+    }
+
+    .video-info { padding: 10px 0 6px; }
+
+    .title {
+      font-size: 0.93rem;
+      font-weight: 500;
+      line-height: 1.38;
+      margin-bottom: 5px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .channel { color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 2px; }
+    .meta { color: var(--text-secondary); font-size: 0.79rem; }
+
+    #status-bar {
+      text-align: center;
+      padding: 30px 20px;
+      color: #777;
+      font-size: 1rem;
+    }
+
+    #end-message {
+      text-align: center;
+      padding: 30px;
+      color: #555;
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .video-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px 12px; }
+      .controls { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🇬🇷 Ελληνικά & Κυπριακά Βίντεο 🇨🇾</h1>
+  <div id="cache-indicator">
+    <span class="dot"></span>
+    <span id="cache-label">—</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="controls">
+    <button data-filter="CY" class="active">🇨🇾 Κύπρος</button>
+    <button data-filter="GR">🇬🇷 Ελλάδα</button>
+    <button data-filter="BOTH">Και τα δύο</button>
+    <button data-filter="LIVE_GR">🔴 Live GR</button>
+    <button data-filter="LIVE_CY">🔴 Live CY</button>
+    <button data-filter="FOREIGN_TO_GRCY">Ξένα → GR/CY</button>
+    <button data-filter="GRCY_TO_FOREIGN">GR/CY → Ξένα</button>
+
+    <select id="sortSelect">
+      <option value="viewCount">Δημοφιλή</option>
+      <option value="date">Πρόσφατα</option>
+      <option value="relevance">Σχετικά</option>
+      <option value="rating">Υψηλή Βαθμολογία</option>
+    </select>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Αναζήτηση ελληνικών βίντεο...">
+      <button id="searchBtn">Ψάξε</button>
+    </div>
+
+    <button id="clear-cache-btn" title="Καθαρισμός cache — θα ξανακαλέσει το API">🗑 Cache</button>
+  </div>
+
+  <div class="quota-bar">
+    <span>API quota σήμερα:</span>
+    <div class="quota-track"><div class="quota-fill" id="quotaFill" style="width:0%"></div></div>
+    <span id="quotaText">0 / 10,000 units</span>
+    <span id="quotaSaved" style="color:#4caf50;margin-left:4px;"></span>
+  </div>
+
+  <div id="status-bar">Φόρτωση βίντεο...</div>
+  <div id="videoGrid" class="video-grid"></div>
+  <div id="end-message">Τέλος αποτελεσμάτων</div>
+  <div id="sentinel" style="height:1px;"></div>
+
+</div>
+
+<script>
+  const API_KEY = 'AIzaSyAjobkwRITlpmtRbPmNtn57w-zYpa-Gup8';
+  const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in ms
+  const UNITS_PER_SEARCH = 100;
+  const MAX_QUOTA = 10000;
+  const QUOTA_KEY = 'yt_quota_used';
+  const QUOTA_DATE_KEY = 'yt_quota_date';
+
+  const grid = document.getElementById('videoGrid');
+  const statusBar = document.getElementById('status-bar');
+  const endMessage = document.getElementById('end-message');
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const sortSelect = document.getElementById('sortSelect');
+  const cacheIndicator = document.getElementById('cache-indicator');
+  const cacheLabel = document.getElementById('cache-label');
+  const quotaFill = document.getElementById('quotaFill');
+  const quotaText = document.getElementById('quotaText');
+  const quotaSaved = document.getElementById('quotaSaved');
+
+  let nextPageToken = null;
+  let isLoading = false;
+  let currentFilter = 'CY';
+  let currentQuery = '';
+  let currentSort = 'viewCount';
+  let currentCacheKey = '';
+  let fromCache = false;
+
+  // ── Quota tracking ──────────────────────────────────────────
+  function getTodayStr() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function getQuotaUsed() {
+    const d = localStorage.getItem(QUOTA_DATE_KEY);
+    if (d !== getTodayStr()) {
+      localStorage.setItem(QUOTA_DATE_KEY, getTodayStr());
+      localStorage.setItem(QUOTA_KEY, '0');
+      return 0;
+    }
+    return parseInt(localStorage.getItem(QUOTA_KEY) || '0', 10);
+  }
+
+  function addQuotaUsed(units) {
+    const used = getQuotaUsed() + units;
+    localStorage.setItem(QUOTA_KEY, String(used));
+    renderQuota(used);
+  }
+
+  function renderQuota(used) {
+    used = used ?? getQuotaUsed();
+    const pct = Math.min((used / MAX_QUOTA) * 100, 100);
+    quotaFill.style.width = pct + '%';
+    quotaFill.className = 'quota-fill' + (pct > 80 ? ' danger' : pct > 50 ? ' warn' : '');
+    quotaText.textContent = `${used.toLocaleString()} / ${MAX_QUOTA.toLocaleString()} units`;
+  }
+
+  // ── Cache helpers ────────────────────────────────────────────
+  function cacheSet(key, data, pageToken) {
+    const entry = { ts: Date.now(), data, nextPageToken: pageToken || null };
+    try { localStorage.setItem('yt_cache_' + key, JSON.stringify(entry)); } catch(e) {}
+  }
+
+  function cacheGet(key) {
+    try {
+      const raw = localStorage.getItem('yt_cache_' + key);
+      if (!raw) return null;
+      const entry = JSON.parse(raw);
+      if (Date.now() - entry.ts > CACHE_TTL) {
+        localStorage.removeItem('yt_cache_' + key);
+        return null;
+      }
+      return entry;
+    } catch(e) { return null; }
+  }
+
+  function buildCacheKey(filter, sort, query, page) {
+    return `${filter}__${sort}__${encodeURIComponent(query)}__p${page}`;
+  }
+
+  function clearAllCache() {
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('yt_cache_'));
+    keys.forEach(k => localStorage.removeItem(k));
+    localStorage.setItem(QUOTA_KEY, '0');
+    reloadVideos();
+  }
+
+  // ── API params ───────────────────────────────────────────────
+  function getFilterParams(filter) {
+    switch (filter) {
+      case 'CY': return { q: 'Κύπρος OR Cyprus OR Κυπριακά OR Κύπριος OR Λευκωσία OR Λεμεσός OR greek cyprus', regionCode: 'CY' };
+      case 'GR': return { q: 'Ελληνικά OR Ελλάδα OR Αθήνα OR Θεσσαλονίκη OR μουσική OR vlog OR gaming', regionCode: 'GR' };
+      case 'BOTH': return { q: 'Ελληνικά OR Ελλάδα OR Κύπρος OR Κυπριακά OR Κύπριος OR Cyprus OR μουσική OR vlog' };
+      case 'LIVE_GR': return { q: '"Ελληνικά live" OR "ζωντανή μετάδοση" OR "live Ελλάδα" OR "streamer Ελλάδα"', eventType: 'live', regionCode: 'GR' };
+      case 'LIVE_CY': return { q: '"Κυπριακά live" OR "live Κύπρος" OR "Κύπριος streamer" OR "cyprus live"', eventType: 'live', regionCode: 'CY' };
+      case 'FOREIGN_TO_GRCY': return { q: 'Greece OR Cyprus OR Athens OR Nicosia OR Greek islands OR Cyprus beaches', relevanceLanguage: 'en' };
+      case 'GRCY_TO_FOREIGN': return { q: 'Greek streamers OR Cypriot streamers OR Ελληνικά live OR Κυπριακά live', relevanceLanguage: 'el', regionCode: 'GR' };
+    }
+  }
+
+  // ── Fetch (with cache) ───────────────────────────────────────
+  async function fetchVideos(pageToken = '') {
+    if (isLoading) return;
+    isLoading = true;
+
+    const page = pageToken ? pageToken : 'first';
+    const cacheKey = buildCacheKey(currentFilter, currentSort, currentQuery, page);
+    const cached = cacheGet(cacheKey);
+
+    if (cached) {
+      fromCache = true;
+      renderVideos(cached.data, cached.nextPageToken, true);
+      setCacheIndicator(true, cached.ts);
+      isLoading = false;
+      return;
+    }
+
+    fromCache = false;
+    setCacheIndicator(false);
+
+    try {
+      const filterParams = getFilterParams(currentFilter);
+      const isLive = currentFilter.startsWith('LIVE');
+
+      if (currentQuery && !isLive) {
+        filterParams.q = currentQuery + (filterParams.q ? ' OR ' + filterParams.q : '');
+      }
+
+      const params = new URLSearchParams({
+        part: 'snippet',
+        type: 'video',
+        maxResults: 24,
+        order: isLive ? 'viewCount' : currentSort,
+        relevanceLanguage: 'el',
+        key: API_KEY,
+        ...filterParams,
+        ...(pageToken ? { pageToken } : {})
+      });
+
+      statusBar.style.display = 'block';
+      statusBar.textContent = 'Φόρτωση από YouTube...';
+
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const msg = err?.error?.message || `HTTP ${res.status}`;
+        if (res.status === 403) {
+          statusBar.textContent = '⚠️ Εξαντλήθηκε το API quota για σήμερα. Δοκίμασε αύριο ή σβήσε το cache.';
+        } else {
+          statusBar.textContent = 'Σφάλμα: ' + msg;
+        }
+        isLoading = false;
+        return;
+      }
+
+      const data = await res.json();
+      addQuotaUsed(UNITS_PER_SEARCH);
+
+      if (!data.items?.length) {
+        endMessage.style.display = 'block';
+        statusBar.style.display = 'none';
+        isLoading = false;
+        return;
+      }
+
+      const nextToken = data.nextPageToken || null;
+      cacheSet(cacheKey, data.items, nextToken);
+      renderVideos(data.items, nextToken, false);
+
+    } catch (err) {
+      statusBar.textContent = 'Σφάλμα σύνδεσης: ' + err.message;
+      console.error(err);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // ── Render ───────────────────────────────────────────────────
+  function renderVideos(items, nextToken, fromCache) {
+    statusBar.style.display = 'none';
+
+    items.forEach(item => {
+      const vid = item.id?.videoId;
+      if (!vid) return;
+      const sn = item.snippet;
+      const publishedDate = new Date(sn.publishedAt).toLocaleDateString('el-GR');
+      const isLive = sn.liveBroadcastContent === 'live';
+
+      const thumbUrl = sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`;
+      card.className = 'video-card';
+      card.innerHTML = `
+        <div class="thumbnail-container" onclick="window.open('https://www.youtube.com/watch?v=${vid}', '_blank')">
+          <img class="thumbnail" src="${thumbUrl}" alt="${escHtml(sn.title)}" loading="lazy">
+          ${isLive ? '<span class="live-badge">LIVE ΤΩΡΑ</span>' : ''}
+          ${fromCache ? '<span class="cached-tag">📦 cache</span>' : ''}
+        </div>
+        <div class="video-info">
+          <div class="title">${escHtml(sn.title)}</div>
+          <div class="channel">${escHtml(sn.channelTitle)}</div>
+          <div class="meta">Δημοσιεύτηκε: ${publishedDate}</div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    nextPageToken = nextToken;
+
+    if (!nextToken) {
+      endMessage.style.display = 'block';
+    }
+
+    updateQuotaSaved();
+  }
+
+  function escHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  function setCacheIndicator(isCached, ts) {
+    cacheIndicator.className = isCached ? 'cached' : 'live';
+    if (isCached && ts) {
+      const age = Math.round((Date.now() - ts) / 60000);
+      const ageStr = age < 60 ? `${age} λεπτά πριν` : `${Math.round(age/60)} ώρες πριν`;
+      cacheLabel.textContent = `📦 Cache (${ageStr})`;
+    } else {
+      cacheLabel.textContent = '🔴 Live API';
+    }
+  }
+
+  function updateQuotaSaved() {
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('yt_cache_'));
+    const saved = keys.length * UNITS_PER_SEARCH;
+    if (saved > 0) {
+      quotaSaved.textContent = `(εξοικονομήθηκαν ${saved.toLocaleString()} units από cache)`;
+    }
+  }
+
+  // ── Controls ─────────────────────────────────────────────────
+  function reloadVideos() {
+    grid.innerHTML = '';
+    nextPageToken = null;
+    endMessage.style.display = 'none';
+    statusBar.style.display = 'block';
+    statusBar.textContent = 'Φόρτωση βίντεο...';
+    fetchVideos();
+  }
+
+  document.querySelectorAll('button[data-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('button[data-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      reloadVideos();
+    });
+  });
+
+  sortSelect.addEventListener('change', () => { currentSort = sortSelect.value; reloadVideos(); });
+
+  searchBtn.addEventListener('click', () => { currentQuery = searchInput.value.trim(); reloadVideos(); });
+  searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') { currentQuery = searchInput.value.trim(); reloadVideos(); } });
+
+  document.getElementById('clear-cache-btn').addEventListener('click', () => {
+    if (confirm('Καθαρισμός cache; Θα ξανακαλεστεί το YouTube API.')) clearAllCache();
+  });
+
+  // ── Infinite scroll ──────────────────────────────────────────
+  const observer = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && nextPageToken && !isLoading) {
+      setTimeout(() => {
+        if (nextPageToken && !isLoading) fetchVideos(nextPageToken);
+      }, 50);
+    }
+  }, { rootMargin: '500px' });
+  observer.observe(document.getElementById('sentinel'));
+
+  // ── Init ─────────────────────────────────────────────────────
+  renderQuota();
+  fetchVideos();
+</script>
+
+</body>
+</html>
