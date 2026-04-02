@@ -193,39 +193,43 @@
     return `${filter}|${sub}|${sort}|${encodeURIComponent(query)}|${page}`;
   }
 
-  function getFilterParams(filter) {
-    switch(filter) {
-      case 'CY': return { q:'Κύπρος OR Cyprus OR Κυπριακά OR Κύπριος OR Λευκωσία OR Λεμεσός', regionCode:'CY' };
-      case 'GR': return { q:'Ελλάδα OR Ελληνικά OR Αθήνα OR Θεσσαλονίκη', regionCode:'GR' };
-      case 'BOTH': return { q:'Ελλάδα OR Κύπρος OR Ελληνικά OR Κυπριακά' };
-      case 'LIVE_GR': return { q:'live Ελλάδα OR ζωντανή μετάδοση OR streamer Ελλάδα', eventType:'live', regionCode:'GR' };
-      case 'LIVE_CY': return { q:'live Κύπρος OR Κύπριος streamer OR cyprus live', eventType:'live', regionCode:'CY' };
-      case 'FOREIGN_TO_GRCY': return { q:'Greece OR Cyprus OR Athens OR Nicosia OR Greek islands', relevanceLanguage:'en' };
-      case 'GRCY_TO_FOREIGN': return { q:'Greek streamer English OR Cypriot English vlog', relevanceLanguage:'el' };
-    }
-  }
-
   async function apiFetch(filter, sub, sort, query, pageToken) {
     const page = pageToken || 'first';
     const key = buildKey(filter, sub, sort, query, page);
     const cached = cacheGet(key);
     if (cached) return { items:cached.data, next:cached.next, fromCache:true };
 
-    const fp = getFilterParams(filter);
     const isLive = filter.startsWith('LIVE');
 
-    // Build combined q: region base + subcategory + user query
-    let q = fp.q;
-    if (sub) q = `(${q}) ${sub}`;
-    if (query && !isLive) q = `${query} (${q})`;
-    fp.q = q;
+    // Region base keywords — broad so YouTube returns results
+    const regionBase = {
+      CY: 'Κύπρος OR Cyprus OR Κυπριακά OR Κύπριος OR Λευκωσία OR Λεμεσός OR Limassol',
+      GR: 'Ελλάδα OR Ελληνικά OR Αθήνα OR Θεσσαλονίκη OR Greek Greece',
+      BOTH: 'Ελλάδα OR Κύπρος OR Ελληνικά OR Κυπριακά OR Greek Greece Cyprus',
+      LIVE_GR: 'greek live OR ελληνικό live OR ζωντανή μετάδοση OR greek streamer',
+      LIVE_CY: 'cyprus live OR κυπριακό live OR cypriot streamer OR live Κύπρος',
+      FOREIGN_TO_GRCY: 'Greece OR Cyprus OR Athens OR Santorini OR Mykonos OR Nicosia',
+      GRCY_TO_FOREIGN: 'Greek youtuber english OR Cypriot youtuber OR Greece vlog OR Cyprus vlog',
+    };
+
+    // Build q: user query (highest priority) + subcategory + region
+    let q = regionBase[filter] || '';
+    if (sub) q = sub + ' ' + q;
+    if (query && !isLive) q = query + ' ' + q;
+
+    const extraParams = {};
+    // regionCode helps for CY/GR but hurts for LIVE (too restrictive)
+    if (filter === 'CY') extraParams.regionCode = 'CY';
+    if (filter === 'GR') extraParams.regionCode = 'GR';
+    if (isLive) extraParams.eventType = 'live';
 
     const params = new URLSearchParams({
       part:'snippet', type:'video', maxResults:24,
       order: isLive ? 'viewCount' : sort,
       relevanceLanguage:'el',
       key: API_KEY,
-      ...fp,
+      q,
+      ...extraParams,
       ...(pageToken ? { pageToken } : {})
     });
 
