@@ -203,13 +203,13 @@
 
     // Region base keywords — broad so YouTube returns results
     const regionBase = {
-      CY: '',
-      GR: '',
-      BOTH: '',
-      LIVE_GR: '',
-      LIVE_CY: '',
-      FOREIGN_TO_GRCY: '',
-      GRCY_TO_FOREIGN: '',
+      CY: 'Κύπρος OR Cyprus OR Κυπριακά OR Κύπριος OR Λευκωσία OR Λεμεσός OR Limassol',
+      GR: 'Ελλάδα OR Ελληνικά OR Αθήνα OR Θεσσαλονίκη OR Greek Greece',
+      BOTH: 'Ελλάδα OR Κύπρος OR Ελληνικά OR Κυπριακά OR Greek Greece Cyprus',
+      LIVE_GR: 'greek live OR ελληνικό live OR ζωντανή μετάδοση OR greek streamer',
+      LIVE_CY: 'cyprus live OR cypriot streamer OR cyprus streamer OR limassol live OR nicosia live OR κυπριακό live OR live Κύπρος OR κύπριος streamer',
+      FOREIGN_TO_GRCY: 'Greece OR Cyprus OR Athens OR Santorini OR Mykonos OR Nicosia',
+      GRCY_TO_FOREIGN: 'Greek youtuber english OR Cypriot youtuber OR Greece vlog OR Cyprus vlog',
     };
 
     // Build q: user query (highest priority) + subcategory + region
