@@ -433,7 +433,24 @@
     loadScrollVideos();
   }
 
+  // ── Auto cache cleanup ──────────────────────────────────────
+  function purgeExpiredCache() {
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('ytc_'));
+    let removed = 0;
+    keys.forEach(k => {
+      try {
+        const e = JSON.parse(localStorage.getItem(k));
+        if (!e || Date.now() - e.ts > CACHE_TTL) {
+          localStorage.removeItem(k);
+          removed++;
+        }
+      } catch(e) { localStorage.removeItem(k); removed++; }
+    });
+    if (removed > 0) console.log(`Cache: αφαιρέθηκαν ${removed} ληγμένες εγγραφές`);
+  }
+
   // ── Init ─────────────────────────────────────────────────────
+  purgeExpiredCache();
   fetchGrid();
 </script>
 </body>
