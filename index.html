@@ -195,11 +195,11 @@
 
   function getFilterParams(filter) {
     switch(filter) {
-      case 'CY': return { q:'', regionCode:'CY' };
-      case 'GR': return { q:'', regionCode:'GR' };
-      case 'BOTH': return { q:'' };
-      case 'LIVE_GR': return { q:'', eventType:'live', regionCode:'GR' };
-      case 'LIVE_CY': return { q:'', eventType:'live', regionCode:'CY' };
+      case 'CY': return { q:'Κύπρος OR Cyprus OR Κυπριακά OR Κύπριος OR Λευκωσία OR Λεμεσός', regionCode:'CY' };
+      case 'GR': return { q:'Ελλάδα OR Ελληνικά OR Αθήνα OR Θεσσαλονίκη', regionCode:'GR' };
+      case 'BOTH': return { q:'Ελλάδα OR Κύπρος OR Ελληνικά OR Κυπριακά' };
+      case 'LIVE_GR': return { q:'live Ελλάδα OR ζωντανή μετάδοση OR streamer Ελλάδα', eventType:'live', regionCode:'GR' };
+      case 'LIVE_CY': return { q:'live Κύπρος OR Κύπριος streamer OR cyprus live', eventType:'live', regionCode:'CY' };
       case 'FOREIGN_TO_GRCY': return { q:'Greece OR Cyprus OR Athens OR Nicosia OR Greek islands', relevanceLanguage:'en' };
       case 'GRCY_TO_FOREIGN': return { q:'Greek streamer English OR Cypriot English vlog', relevanceLanguage:'el' };
     }
